@@ -1,0 +1,9 @@
+node_modules
+.env*
+.vscode
+*.pem
+*.key
+*.csr
+*.ext
+*.crt
+*.srl

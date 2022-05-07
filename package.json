@@ -1,0 +1,31 @@
+{
+  "name": "trading-api-service",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "debug": "env $(cat .env | grep -v \"#\" | xargs) nodemon --exec 'node --inspect-brk --experimental-specifier-resolution=node --loader ts-node/esm' src/main.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/loonskai/trading-api-service.git"
+  },
+  "author": "Siarhei Lunski <loonskai@gmail.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/loonskai/trading-api-service/issues"
+  },
+  "homepage": "https://github.com/loonskai/trading-api-service#readme",
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.22.0",
+    "@typescript-eslint/parser": "^5.22.0",
+    "eslint": "^8.15.0",
+    "nodemon": "^2.0.16",
+    "ts-node": "^10.7.0",
+    "typescript": "^4.8.0-dev.20220507"
+  },
+  "dependencies": {
+    "undici": "^5.1.1"
+  }
+}
