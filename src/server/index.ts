@@ -1,6 +1,12 @@
 import { createServer } from "https";
 import { readFileSync } from "fs";
 import { WebSocketServer } from "ws";
+import express from "express";
+import { ApolloServer } from "apollo-server-express";
+import { useServer } from "graphql-ws/lib/use/ws";
+
+import { schema } from "./graphql/schema";
+import { ApolloServerPluginDrainHttpServer } from "apollo-server-core";
 
 const {
   SERVER_HOSTNAME = "",
@@ -9,27 +15,43 @@ const {
   CERT_KEY_PATH = "",
 } = process.env;
 
-export const startServer = () => {
-  const options = {
+export const startServer = async () => {
+  const credentials = {
     key: readFileSync(CERT_KEY_PATH),
     cert: readFileSync(CERT_FILE_PATH),
   };
-  const server = createServer(options, (_, res) => {
-    res.writeHead(200);
-    res.end("Hello world\n");
+
+  const app = express();
+  const httpServer = createServer(credentials, app);
+  const wsServer = new WebSocketServer({
+    server: httpServer,
+    path: "/graphql",
   });
 
-  const wss = new WebSocketServer({ server });
-  wss.on("connection", (ws) => {
-    ws.on("message", (data) => {
-      console.log("received: %s", data);
-      ws.send("pong");
-    });
+  const serverCleanup = useServer({ schema }, wsServer);
+  const apolloServer = new ApolloServer({
+    schema,
+    csrfPrevention: true,
+    plugins: [
+      ApolloServerPluginDrainHttpServer({ httpServer }),
+      {
+        async serverWillStart() {
+          return {
+            async drainServer() {
+              await serverCleanup.dispose();
+            },
+          };
+        },
+      },
+    ],
   });
+  await apolloServer.start();
+  apolloServer.applyMiddleware({ app });
 
-  server.listen(Number(SERVER_PORT), SERVER_HOSTNAME, undefined, () => {
-    console.log(
-      `Server is running on https://${SERVER_HOSTNAME}:${SERVER_PORT} ...`
-    );
-  });
+  await new Promise<void>((resolve) =>
+    httpServer.listen(Number(SERVER_PORT), SERVER_HOSTNAME, undefined, resolve)
+  );
+  console.log(
+    `Server is running on https://${SERVER_HOSTNAME}:${SERVER_PORT} ...`
+  );
 };
