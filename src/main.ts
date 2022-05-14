@@ -1,4 +1,5 @@
 import { apiClient, papersApiClient } from "./clients/index.js";
+import { startServer } from "./server/index.js";
 
 const accountResponse = await apiClient.request({
   method: "GET",
@@ -13,3 +14,5 @@ const paperAccountResponse = await papersApiClient.request({
 });
 const paperAccountJson = await paperAccountResponse.body.json();
 console.log(paperAccountJson);
+
+startServer();
